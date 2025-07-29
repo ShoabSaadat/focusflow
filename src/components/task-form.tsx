@@ -5,13 +5,15 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-import { type Task, type TaskPriority, type SoundType } from "@/types";
+import { type Task, type SoundType } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useSound } from "@/hooks/use-sound";
+import { Volume2 } from "lucide-react";
 
 interface TaskFormProps {
   isOpen: boolean;
@@ -31,6 +33,7 @@ const formSchema = z.object({
 });
 
 export function TaskForm({ isOpen, onOpenChange, onSave, taskToEdit }: TaskFormProps) {
+  const { playSound } = useSound();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -43,6 +46,8 @@ export function TaskForm({ isOpen, onOpenChange, onSave, taskToEdit }: TaskFormP
       sound: 'beep',
     },
   });
+  
+  const selectedSound = form.watch('sound');
 
   React.useEffect(() => {
     if (taskToEdit) {
@@ -173,18 +178,29 @@ export function TaskForm({ isOpen, onOpenChange, onSave, taskToEdit }: TaskFormP
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Reminder Sound</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a sound" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="beep">Beep</SelectItem>
-                        <SelectItem value="chime">Chime</SelectItem>
-                        <SelectItem value="bell">Bell</SelectItem>
-                      </SelectContent>
-                    </Select>
+                     <div className="flex gap-2">
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a sound" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="beep">Beep</SelectItem>
+                          <SelectItem value="chime">Chime</SelectItem>
+                          <SelectItem value="bell">Bell</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="icon"
+                        onClick={() => playSound(selectedSound)}
+                      >
+                          <Volume2 className="h-4 w-4" />
+                          <span className="sr-only">Preview sound</span>
+                      </Button>
+                     </div>
                     <FormMessage />
                   </FormItem>
                 )}

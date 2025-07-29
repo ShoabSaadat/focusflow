@@ -4,8 +4,15 @@ import { useRef, useEffect, useCallback } from 'react';
 import { type SoundType } from '@/types';
 
 type SoundPlayer = {
+  playSound: (sound: SoundType) => void;
   startLoop: (sound: SoundType) => void;
   stopLoop: () => void;
+};
+
+// Helper function to create AudioContext to support older browsers.
+const createAudioContext = (): AudioContext | null => {
+  if (typeof window === 'undefined') return null;
+  return new (window.AudioContext || (window as any).webkitAudioContext)();
 };
 
 export function useSound(): SoundPlayer {
@@ -14,49 +21,50 @@ export function useSound(): SoundPlayer {
   const gainNodeRef = useRef<GainNode | null>(null);
   const loopIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Initialize AudioContext on mount
   useEffect(() => {
-    // This effect runs once on mount to create the AudioContext.
-    // We check for window to ensure it only runs on the client.
-    if (typeof window !== 'undefined' && !audioContextRef.current) {
-      const context = new (window.AudioContext || (window as any).webkitAudioContext)();
-      audioContextRef.current = context;
+    if (!audioContextRef.current) {
+        audioContextRef.current = createAudioContext();
     }
-
+    
     // Cleanup on unmount
     return () => {
         stopLoop();
         if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-            audioContextRef.current.close();
+            // Closing the context was causing issues on re-renders, 
+            // so we'll just stop sounds instead.
         }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const stopLoop = useCallback(() => {
-    if (loopIntervalRef.current) {
-        clearInterval(loopIntervalRef.current);
-        loopIntervalRef.current = null;
-    }
+  const stopSound = useCallback(() => {
     if (oscillatorRef.current) {
-      oscillatorRef.current.stop();
-      oscillatorRef.current.disconnect();
-      oscillatorRef.current = null;
+      try {
+        oscillatorRef.current.stop();
+        oscillatorRef.current.disconnect();
+      } catch (e) {
+        // Hushing errors on double-stopping
+      } finally {
+        oscillatorRef.current = null;
+      }
     }
     if (gainNodeRef.current) {
         gainNodeRef.current.disconnect();
         gainNodeRef.current = null;
     }
   }, []);
-  
+
   const playSound = useCallback((sound: SoundType) => {
     const audioContext = audioContextRef.current;
     if (!audioContext) return;
 
-    // It's a good practice to resume the context, in case it was suspended.
+    // Resume context if it's suspended (e.g., due to browser policies)
     if (audioContext.state === 'suspended') {
       audioContext.resume();
     }
     
-    stopLoop(); // Stop any existing sound before playing a new one.
+    stopSound();
 
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
@@ -66,18 +74,21 @@ export function useSound(): SoundPlayer {
     oscillatorRef.current = oscillator;
     gainNodeRef.current = gainNode;
 
+    let duration = 0.5;
     switch(sound) {
         case 'chime':
             oscillator.type = 'sine';
             oscillator.frequency.setValueAtTime(1046.50, audioContext.currentTime); // C6
             gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
             gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 1);
+            duration = 1;
             break;
         case 'bell':
             oscillator.type = 'triangle';
             oscillator.frequency.setValueAtTime(1567.98, audioContext.currentTime); // G6
             gainNode.gain.setValueAtTime(0.25, audioContext.currentTime);
             gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 1.5);
+            duration = 1.5;
             break;
         case 'beep':
         default:
@@ -85,13 +96,21 @@ export function useSound(): SoundPlayer {
             oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
             gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
             gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.5);
+            duration = 0.5;
             break;
     }
 
     oscillator.start(audioContext.currentTime);
-    const duration = sound === 'bell' ? 1.5 : (sound === 'chime' ? 1 : 0.5)
     oscillator.stop(audioContext.currentTime + duration);
-  }, [stopLoop]);
+  }, [stopSound]);
+
+  const stopLoop = useCallback(() => {
+    if (loopIntervalRef.current) {
+        clearInterval(loopIntervalRef.current);
+        loopIntervalRef.current = null;
+    }
+    stopSound();
+  }, [stopSound]);
 
   const startLoop = useCallback((sound: SoundType) => {
     stopLoop(); // Ensure no other loops are running
@@ -105,6 +124,5 @@ export function useSound(): SoundPlayer {
     playAndScheduleNext();
   }, [playSound, stopLoop]);
 
-
-  return { startLoop, stopLoop };
+  return { playSound, startLoop, stopLoop };
 }
