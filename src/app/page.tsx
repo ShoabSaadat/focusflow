@@ -71,39 +71,58 @@ export default function Home() {
   const handleStopFocus = () => {
     setActiveTask(null);
   }
+  
+  if (isClient && activeTask) {
+    return (
+      <FocusTimer 
+        task={activeTask}
+        onStop={handleStopFocus}
+      />
+    )
+  }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold font-headline text-foreground/80">
-            My Tasks
-          </h1>
-          <Button onClick={handleCreateTask}>
-            <Plus className="mr-2 h-4 w-4" />
-            New Task
-          </Button>
-        </div>
-        
-        {isClient ? (
-          <TaskList
-            tasks={tasks}
-            onEdit={handleEditTask}
-            onDelete={handleDeleteRequest}
-            onStart={handleStartTask}
-            activeTaskId={activeTask?.id}
-          />
-        ) : (
-          <div className="text-center py-16 px-6 rounded-lg bg-card border border-dashed">
-            Loading tasks...
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4">
+      <div className="max-w-6xl mx-auto">
+        <Header />
+        <main className="py-8">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h1 className="text-3xl font-light text-slate-800">
+                My Focus Tasks
+              </h1>
+              <p className="text-slate-500 font-light mt-1">
+                Create meaningful focus sessions with gentle reminders.
+              </p>
+            </div>
+            <Button onClick={handleCreateTask} className="bg-primary hover:bg-primary/90 text-white rounded-lg px-6 py-2 font-light">
+              <Plus className="mr-2 h-4 w-4" />
+              New Task
+            </Button>
           </div>
-        )}
-      </main>
+          
+          {isClient ? (
+            <TaskList
+              tasks={tasks}
+              onEdit={handleEditTask}
+              onDelete={handleDeleteRequest}
+              onStart={handleStartTask}
+              activeTaskId={activeTask?.id}
+            />
+          ) : (
+            <div className="text-center py-16 px-6 rounded-lg bg-white/50 border border-dashed">
+              <p className="text-slate-500 text-lg font-light">Loading your focus tasks...</p>
+            </div>
+          )}
+        </main>
+      </div>
 
       <TaskForm
         isOpen={isFormOpen}
-        onOpenChange={setIsFormOpen}
+        onOpenChange={(isOpen) => {
+            if (!isOpen) setTaskToEdit(null);
+            setIsFormOpen(isOpen);
+        }}
         onSave={handleSaveTask}
         taskToEdit={taskToEdit}
       />
@@ -119,17 +138,10 @@ export default function Home() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setTaskToDelete(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm}>Delete</AlertDialogAction>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {isClient && activeTask && (
-          <FocusTimer 
-            task={activeTask}
-            onStop={handleStopFocus}
-          />
-      )}
     </div>
   );
 }

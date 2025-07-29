@@ -2,7 +2,7 @@
 
 import { type Task } from "@/types";
 import { TaskCard } from "./task-card";
-import Image from "next/image";
+import { ScrollArea } from "./ui/scroll-area";
 
 interface TaskListProps {
   tasks: Task[];
@@ -15,35 +15,31 @@ interface TaskListProps {
 export function TaskList({ tasks, onEdit, onDelete, onStart, activeTaskId }: TaskListProps) {
   if (tasks.length === 0) {
     return (
-      <div className="text-center py-16 px-6 rounded-lg bg-card border border-dashed">
-        <Image 
-            src="https://placehold.co/300x200.png"
-            alt="An illustration showing a person relaxing"
-            width={300}
-            height={200}
-            className="mx-auto mb-6 rounded-lg"
-            data-ai-hint="illustration serene"
-        />
-        <h2 className="text-2xl font-semibold font-headline text-foreground/80">You have no tasks yet!</h2>
-        <p className="mt-2 text-muted-foreground">
-          Click &quot;New Task&quot; to create your first focus session.
+      <div className="text-center py-24">
+        <p className="text-slate-500 text-lg font-light mb-4">
+          You have no focus tasks yet!
+        </p>
+        <p className="text-slate-400 text-sm">
+          Click &quot;New Task&quot; to begin your focus journey.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {tasks.map((task) => (
-        <TaskCard
-          key={task.id}
-          task={task}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          onStart={onStart}
-          isTaskActive={!!activeTaskId}
-        />
-      ))}
-    </div>
+    <ScrollArea className="h-[calc(100vh-200px)]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {tasks.map((task) => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onStart={onStart}
+              isTaskActive={!!activeTaskId}
+            />
+          ))}
+        </div>
+    </ScrollArea>
   );
 }
