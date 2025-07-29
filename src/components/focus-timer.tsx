@@ -107,6 +107,7 @@ export function FocusTimer({ task, onStop }: FocusTimerProps) {
         onConfirm={handleConfirmFocus}
         taskTitle={task.title}
         taskEmoji={task.emoji}
+        sound={task.sound}
       />
     </>
   );

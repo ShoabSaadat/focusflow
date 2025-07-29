@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-import { type Task, type TaskPriority } from "@/types";
+import { type Task, type TaskPriority, type SoundType } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -27,6 +27,7 @@ const formSchema = z.object({
   interval: z.coerce.number().min(1, { message: "Interval must be at least 1 second." }),
   category: z.string().optional(),
   priority: z.enum(['low', 'medium', 'high']),
+  sound: z.enum(['beep', 'chime', 'bell']),
 });
 
 export function TaskForm({ isOpen, onOpenChange, onSave, taskToEdit }: TaskFormProps) {
@@ -39,6 +40,7 @@ export function TaskForm({ isOpen, onOpenChange, onSave, taskToEdit }: TaskFormP
       interval: 300,
       category: '',
       priority: 'medium',
+      sound: 'beep',
     },
   });
 
@@ -53,6 +55,7 @@ export function TaskForm({ isOpen, onOpenChange, onSave, taskToEdit }: TaskFormP
         interval: 300,
         category: '',
         priority: 'medium',
+        sound: 'beep',
       });
     }
   }, [taskToEdit, form]);
@@ -141,28 +144,52 @@ export function TaskForm({ isOpen, onOpenChange, onSave, taskToEdit }: TaskFormP
                 )}
               />
             </div>
-            <FormField
-              control={form.control}
-              name="priority"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Priority</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a priority" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Priority</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a priority" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="sound"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Reminder Sound</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a sound" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="beep">Beep</SelectItem>
+                        <SelectItem value="chime">Chime</SelectItem>
+                        <SelectItem value="bell">Bell</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <div className="flex justify-end">
               <Button type="submit">{taskToEdit ? "Save Changes" : "Create Task"}</Button>
             </div>

@@ -10,23 +10,37 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useSound } from "@/hooks/use-sound";
+import { type SoundType } from "@/types";
 
 interface FocusAlertProps {
   isOpen: boolean;
   onConfirm: () => void;
   taskTitle: string;
   taskEmoji: string;
+  sound: SoundType;
 }
 
-export function FocusAlert({ isOpen, onConfirm, taskTitle, taskEmoji }: FocusAlertProps) {
-  const { play } = useSound();
+export function FocusAlert({ isOpen, onConfirm, taskTitle, taskEmoji, sound }: FocusAlertProps) {
+  const { startLoop, stopLoop } = useSound();
 
   React.useEffect(() => {
     if (isOpen) {
-      play();
+      startLoop(sound);
+    } else {
+      stopLoop();
     }
-  }, [isOpen, play]);
+    
+    // Cleanup on unmount or when isOpen changes to false
+    return () => {
+      stopLoop();
+    };
+  }, [isOpen, sound, startLoop, stopLoop]);
 
+  const handleConfirm = () => {
+    stopLoop();
+    onConfirm();
+  };
+  
   return (
     <AlertDialog open={isOpen}>
       <AlertDialogContent>
@@ -40,7 +54,7 @@ export function FocusAlert({ isOpen, onConfirm, taskTitle, taskEmoji }: FocusAle
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="flex justify-center pt-4">
-          <AlertDialogAction onClick={onConfirm} className="px-8 py-6 text-lg">
+          <AlertDialogAction onClick={handleConfirm} className="px-8 py-6 text-lg">
             I am focused
           </AlertDialogAction>
         </div>

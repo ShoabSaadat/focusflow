@@ -1,4 +1,5 @@
 export type TaskPriority = 'low' | 'medium' | 'high';
+export type SoundType = 'beep' | 'chime' | 'bell';
 
 export interface Task {
   id: string;
@@ -9,4 +10,5 @@ export interface Task {
   category?: string;
   priority: TaskPriority;
   createdAt: string; // ISO string
+  sound: SoundType;
 }
