@@ -13,11 +13,16 @@ import { useLocalStorage } from "@/hooks/use-local-storage";
 import { FocusTimer } from "@/components/focus-timer";
 
 export default function Home() {
+  const [isClient, setIsClient] = React.useState(false);
   const [tasks, setTasks] = useLocalStorage<Task[]>("tasks", []);
   const [isFormOpen, setIsFormOpen] = React.useState(false);
   const [taskToEdit, setTaskToEdit] = React.useState<Task | null>(null);
   const [taskToDelete, setTaskToDelete] = React.useState<Task | null>(null);
   const [activeTask, setActiveTask] = React.useState<Task | null>(null);
+
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleCreateTask = () => {
     setTaskToEdit(null);
@@ -80,14 +85,20 @@ export default function Home() {
             New Task
           </Button>
         </div>
-
-        <TaskList
-          tasks={tasks}
-          onEdit={handleEditTask}
-          onDelete={handleDeleteRequest}
-          onStart={handleStartTask}
-          activeTaskId={activeTask?.id}
-        />
+        
+        {isClient ? (
+          <TaskList
+            tasks={tasks}
+            onEdit={handleEditTask}
+            onDelete={handleDeleteRequest}
+            onStart={handleStartTask}
+            activeTaskId={activeTask?.id}
+          />
+        ) : (
+          <div className="text-center py-16 px-6 rounded-lg bg-card border border-dashed">
+            Loading tasks...
+          </div>
+        )}
       </main>
 
       <TaskForm
@@ -113,7 +124,7 @@ export default function Home() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {activeTask && (
+      {isClient && activeTask && (
           <FocusTimer 
             task={activeTask}
             onStop={handleStopFocus}
