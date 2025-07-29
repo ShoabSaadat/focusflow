@@ -24,7 +24,7 @@ const formSchema = z.object({
   emoji: z.string().min(1, 'Emoji is required.'),
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
   description: z.string().optional(),
-  interval: z.coerce.number().min(1, { message: "Interval must be at least 1 minute." }),
+  interval: z.coerce.number().min(1, { message: "Interval must be at least 1 second." }),
   category: z.string().optional(),
   priority: z.enum(['low', 'medium', 'high']),
 });
@@ -36,7 +36,7 @@ export function TaskForm({ isOpen, onOpenChange, onSave, taskToEdit }: TaskFormP
       emoji: '✨',
       title: '',
       description: '',
-      interval: 5,
+      interval: 300,
       category: '',
       priority: 'medium',
     },
@@ -50,7 +50,7 @@ export function TaskForm({ isOpen, onOpenChange, onSave, taskToEdit }: TaskFormP
         emoji: '✨',
         title: '',
         description: '',
-        interval: 5,
+        interval: 300,
         category: '',
         priority: 'medium',
       });
@@ -119,7 +119,7 @@ export function TaskForm({ isOpen, onOpenChange, onSave, taskToEdit }: TaskFormP
                 name="interval"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Reminder Interval (minutes)</FormLabel>
+                    <FormLabel>Reminder Interval (seconds)</FormLabel>
                     <FormControl>
                       <Input type="number" {...field} />
                     </FormControl>

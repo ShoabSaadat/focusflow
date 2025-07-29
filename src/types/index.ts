@@ -5,7 +5,7 @@ export interface Task {
   emoji: string;
   title: string;
   description?: string;
-  interval: number; // in minutes
+  interval: number; // in seconds
   category?: string;
   priority: TaskPriority;
   createdAt: string; // ISO string

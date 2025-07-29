@@ -25,7 +25,7 @@ export function FocusTimer({ task, onStop }: FocusTimerProps) {
   const [isAlertOpen, setIsAlertOpen] = React.useState(false);
   const [progress, setProgress] = React.useState(0);
 
-  const intervalMilliseconds = task.interval * 60 * 1000;
+  const intervalMilliseconds = task.interval * 1000;
 
   React.useEffect(() => {
     const timer = setInterval(() => {
@@ -45,7 +45,7 @@ export function FocusTimer({ task, onStop }: FocusTimerProps) {
           clearInterval(progressInterval);
           return 100;
         }
-        return prev + 100 / (task.interval * 60);
+        return prev + 100 / task.interval;
       });
     }, 1000);
 
@@ -55,6 +55,19 @@ export function FocusTimer({ task, onStop }: FocusTimerProps) {
   const handleConfirmFocus = () => {
     setIsAlertOpen(false);
   };
+  
+  const getIntervalText = () => {
+    if (task.interval < 60) {
+        return `${task.interval} ${task.interval > 1 ? "seconds" : "second"}`
+    }
+    const minutes = Math.floor(task.interval / 60);
+    const seconds = task.interval % 60;
+    let text = `${minutes} ${minutes > 1 ? "minutes" : "minute"}`;
+    if (seconds > 0) {
+        text += ` and ${seconds} ${seconds > 1 ? "seconds" : "second"}`;
+    }
+    return text;
+  }
 
   return (
     <>
@@ -72,7 +85,7 @@ export function FocusTimer({ task, onStop }: FocusTimerProps) {
             <DialogDescription className="text-center pt-2 text-base">
               Focusing on: {task.description || "No description."}
               <br />
-              Reminder every {task.interval} {task.interval > 1 ? "minutes" : "minute"}.
+              Reminder every {getIntervalText()}.
             </DialogDescription>
           </DialogHeader>
           <div className="py-8">
